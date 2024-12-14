@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}
+Ses Kaydet
+{% endblock title %}
+
+{% block content %}
+<div class="container">
+  <h1 class="title">Ses Kaydedici</h1>
+    <br />
+    <div class="recorder">
+        <button id="startRecord" class="button start">Kayda Başla</button>
+        <button id="stopRecord" class="button stop" disabled>Kaydı Durdur</button>
+        <div id="recordIndicator" class="indicator hidden"></div>
+    </div>
+  <div class="audio-preview">
+    <audio id="audioPlayback" controls class="audio-player"></audio>
+    <button id="deleteRecording" class="button delete hidden">Kaydı Sil</button>
+  </div>
+  <form id="uploadForm" method="POST" enctype="multipart/form-data" class="upload-form">
+    <input type="file" id="audioFile" name="audio_file" hidden />
+    <button type="submit" id="uploadButton" class="button upload" disabled>Kaydı Yükle</button>
+  </form>
+</div>
+
+<style>
+  .container {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+
+  .title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+  }
+
+  .recorder {
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .indicator {
+    width: 20px;
+    height: 20px;
+    background-color: red;
+    border-radius: 50%;
+    position: absolute;
+    top: -40px; /* Adjusted to prevent overlap */
+    left: 50%;
+    transform: translateX(-50%);
+    animation: blink 1s infinite;
+  }
+
+  .indicator.hidden {
+    display: none;
+  }
+
+  @keyframes blink {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .button {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+
+  .button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+
+  .button.start {
+    background-color: #28a745;
+    color: #fff;
+  }
+
+  .button.start:hover {
+    background-color: #218838;
+  }
+
+  .button.stop {
+    background-color: #dc3545;
+    color: #fff;
+  }
+
+  .button.stop:hover {
+    background-color: #c82333;
+  }
+
+  .button.upload {
+    background-color: #007bff;
+    color: #fff;
+    margin-top: 10px;
+  }
+
+  .button.upload:hover {
+    background-color: #0056b3;
+  }
+
+  .button.delete {
+    background-color: #ff4500;
+    color: #fff;
+    margin-top: 10px;
+  }
+
+  .button.delete:hover {
+    background-color: #e03e00;
+  }
+
+  .button:not(:disabled):hover {
+    transform: scale(1.05);
+  }
+
+  .audio-preview {
+    margin: 20px 0;
+  }
+
+  .audio-player {
+    width: 100%;
+    outline: none;
+  }
+
+  .upload-form {
+    margin-top: 20px;
+  }
+</style>
+
+<script>
+let mediaRecorder;
+let audioChunks = [];
+const startButton = document.getElementById("startRecord");
+const stopButton = document.getElementById("stopRecord");
+const uploadButton = document.getElementById("uploadButton");
+const audioPlayback = document.getElementById("audioPlayback");
+const audioFileInput = document.getElementById("audioFile");
+const recordIndicator = document.getElementById("recordIndicator");
+const deleteButton = document.getElementById("deleteRecording");
+
+startButton.addEventListener("click", async () => {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  mediaRecorder = new MediaRecorder(stream);
+  mediaRecorder.start();
+
+  recordIndicator.classList.remove("hidden");
+  audioChunks = [];
+
+  mediaRecorder.addEventListener("dataavailable", (event) => {
+    audioChunks.push(event.data);
+  });
+
+  mediaRecorder.addEventListener("stop", () => {
+    recordIndicator.classList.add("hidden");
+    const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+    const audioUrl = URL.createObjectURL(audioBlob);
+    audioPlayback.src = audioUrl;
+
+    // Convert Blob to File for Upload
+    const audioFile = new File([audioBlob], "recording.wav", { type: "audio/wav" });
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(audioFile);
+    audioFileInput.files = dataTransfer.files;
+
+    uploadButton.disabled = false;
+    deleteButton.classList.remove("hidden");
+  });
+
+  startButton.disabled = true;
+  stopButton.disabled = false;
+});
+
+stopButton.addEventListener("click", () => {
+  mediaRecorder.stop();
+  startButton.disabled = false;
+  stopButton.disabled = true;
+});
+
+deleteButton.addEventListener("click", () => {
+  audioPlayback.src = "";
+  audioFileInput.value = "";
+  uploadButton.disabled = true;
+  deleteButton.classList.add("hidden");
+});
+</script>
+{% endblock content %}
