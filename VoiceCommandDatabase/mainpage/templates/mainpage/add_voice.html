@@ -10,13 +10,59 @@ Ses Ekle
     <form method="post" enctype="multipart/form-data" class="shadow-lg p-4 rounded bg-light">
         {% csrf_token %}
         <div class="form-group mb-3">
-            {{ form.as_p }}
+            <label for="id_owner_name">Ad Soyad</label>
+            <input type="text" id="first_name" name="first_name" class="form-control" required 
+                pattern="^[A-Za-zÇçĞğİıÖöŞşÜü\s]+$" title="İsim sadece harflerden oluşmalıdır." placeholder="İsim giriniz">
+        </div>
+
+        <div class="form-group mb-3">
+            <label for="id_owner_gender">Cinsiyet</label>
+            <select id="owner_gender" name="owner_gender" class="form-control" required>
+                <option value="">Cinsiyet Seçiniz</option>
+                <option value="erkek">Erkek</option>
+                <option value="kadin">Kadın</option>
+            </select>
+        </div>
+
+        <div class="form-group mb-3">
+            <label for="id_language">Dil</label>
+            <select id="owner_gender" name="owner_gender" class="form-control" required>
+                <option value="">Dil Seçiniz</option>
+                <option value="turkce">Türkçe</option>
+                <option value="ingilizce">İngilizce</option>
+            </select>
+        </div>
+
+        <div class="form-group mb-3">
+            <label for="id_word">Seste Söylenen Kelime</label>
+            <select id="owner_gender" name="owner_gender" class="form-control" required>
+                <option value="">Kelime Seçiniz</option>
+                <option value="isik">Işığı</option>
+                <option value="alarm">Alarmı</option>
+                <option value="multimedya">Multimedyayı</option>
+                <option value="aydinlatma">Aydınlatmayı</option>
+                <option value="parlaklik">Parlaklığı</option>
+                <option value="iklimlendirme">İklimlendirmeyi</option>
+                <option value="oda">Odayı</option>
+                <option value="fan">Fanı</option>
+                <option value="isitma">Isıtmayı</option>
+                <option value="sicaklik">Sıcaklığı</option>
+            </select>
+        </div>
+
+        <div class="form-group mb-3">
+            <label for="id_file">Ses Dosyası</label>
+            {{ form.file }}
         </div>
         <button type="submit" class="btn btn-success btn-lg w-100">Yükle</button>
     </form>
 </div>
 <style>
     /* Genel Sayfa Tasarımı */
+    label {
+        font-weight: bold;
+    }
+
     .container {
         max-width: 600px; /* Formu sınırlı bir alanda tutar */
         margin-top: 50px;
