@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth import get_user_model
 
 class Users(AbstractUser):
     # Yetki seviyesini ekledik
@@ -24,7 +25,7 @@ class Users(AbstractUser):
 
 class Voices(models.Model):
     id = models.AutoField(primary_key=True)
-    created_by = models.ForeignKey("Users", on_delete=models.CASCADE, related_name="voices", null=True)
+    created_by = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="voices")
     word = models.CharField(max_length=255, blank=True, null=True)  # Sesin başlığı veya açıklaması
     file = models.FileField(upload_to="voices/")  # Ses dosyasının yolu
     duration = models.FloatField(blank=True, null=True)  # Sesin süresi (saniye)

@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .models import Voices
+from .models import Voices, Users
 from django.core.paginator import Paginator
-from .forms import ReceiptForm
+from .forms import VoiceForm
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
@@ -19,17 +19,14 @@ def index(request):
 def add_voice(request):
     # If you have a form for adding voices, you'd handle form submission here
     if request.method == 'POST':
-        form = ReceiptForm(request.POST, request.FILES)
+        form = VoiceForm(request.POST, request.FILES)
         if form.is_valid():
-            # if request.user.is_authenticated:
-            #     form.instance.created_by = request.user
-            # else: 
-            #     form.instance.created_by = User.objects.first()
+            form.instance.created_by = request.user
             form.save()
             return redirect('index')
         print(form.errors)
     else:
-        form = ReceiptForm()    
+        form = VoiceForm()    
     return render(request, "mainpage/add_voice.html", {'form':form})
 
 @login_required
