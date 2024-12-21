@@ -16,12 +16,20 @@
             <!-- Navbar Sağ Taraf -->
             <ul class="navbar-nav">
             {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="btn btn-danger btn-sm" href="{% url 'logout' %}">Çıkış Yap</a>
-                </li>
+                <div class="d-flex align-items-center">
+                    <li>
+                        <a class="nav-link text-white fw-semibold" href="{% url 'index' %}">Hoşgeldin {{ user }}</a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <a class="btn btn-danger btn-sm" href="{% url 'logout' %}">Çıkış Yap</a>
+                    </li>
+                </div>
             {% else %}
                 <li class="nav-item">
-                    <a class="btn btn-danger btn-sm" href="{% url 'login' %}">Giriş Yap</a>
+                    <a class="btn btn-success btn-sm" id="kuculme" href="{% url 'login' %}">Giriş Yap</a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-success btn-sm" id="kuculme" href="{% url 'register' %}">Kayıt Ol</a>
                 </li>
             {% endif %}
                 
@@ -73,6 +81,12 @@
         transform: scale(1.05); /* Hafif büyüme efekti */
     }
 
+    #kuculme {
+        border-radius: 30px;
+        padding: 5px 20px;
+        font-size: 0.9rem;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
     /* Toggler simgesi */
     .navbar-toggler-icon {
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba%288, 8, 8, 0.5%29' stroke-width='2' stroke-linecap='round' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");

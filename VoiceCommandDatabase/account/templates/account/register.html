@@ -5,5 +5,47 @@ Kayıt ol
 {% endblock title %}
 
 {% block content %}
-register
+<div class="container mt-3">
+    <div class="col">
+        <h2>Kayıt ol</h2>
+        <hr>
+        <form method="post" action="{% url 'register' %}">
+            {% csrf_token %}
+            {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endif %}
+            <div class="row mb-3">
+                <div class="col mb-3">
+                    <label for="first_name" class="form-label">Ad</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name" required>
+                </div>
+                <div class="col mb-3">
+                    <label for="last_name" class="form-label">Soyad</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">E-posta</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="username" class="form-label">Kullanıcı adı</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+            <div class="row mb-3">
+                <div class="col mb-3">
+                    <label for="password" class="form-label">Şifre</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <div class="col mb-3">
+                    <label for="password2" class="form-label">Şifre tekrar</label>
+                    <input type="password" class="form-control" id="password2" name="password2" required>
+                </div>
+            </div>
+            <button type="submit"class="btn btn-primary">Kayıt ol</button>
+        </form>
+    </div>
+</div>
 {% endblock content %}

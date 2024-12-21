@@ -5,5 +5,27 @@ Giriş yap
 {% endblock title %}
 
 {% block content %}
-giriş
+<div class="container mt-3">
+    <div class="col">
+        <h2>Giriş yap</h2>
+        <hr>
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% else %}
+            {% endif %}
+            <div class="mb-3">
+                <label for="username" class="form-label">Kullanıcı adı</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Şifre</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>                
+            <button type="submit"class="btn btn-primary">Giriş yap</button>
+        </form>
+    </div>
 {% endblock content %}
