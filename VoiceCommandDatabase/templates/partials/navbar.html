@@ -15,9 +15,16 @@
             </ul>
             <!-- Navbar Sağ Taraf -->
             <ul class="navbar-nav">
+            {% if user.is_authenticated %}
                 <li class="nav-item">
                     <a class="btn btn-danger btn-sm" href="/logout">Çıkış Yap</a>
                 </li>
+            {% else %}
+                <li class="nav-item">
+                    <a class="btn btn-danger btn-sm" href="/login">Giriş Yap</a>
+                </li>
+            {% endif %}
+                
             </ul>
         </div>
     </div>

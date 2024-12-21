@@ -3,215 +3,107 @@
 {% block title %}Ses Kayıtları{% endblock title %}
 
 {% block head %}
-<style>
-    /* Statistics Cards */
-    .stats-card {
-        @apply bg-white rounded-lg shadow-md p-5 transform transition hover:scale-105 flex items-center justify-between;
-    }
-    .stats-card-title {
-        @apply text-lg font-semibold text-gray-600;
-    }
-    .stats-card-value {
-        @apply text-3xl font-bold;
-    }
 
-    /* Table Styles */
-    .voices-table {
-        @apply w-full;
-    }
-    .voices-table thead {
-        @apply bg-gradient-to-r from-blue-500 to-purple-600 text-white;
-    }
-    .voices-table tbody tr {
-        @apply border-b hover:bg-gray-100 transition;
-    }
-    .voices-table tbody tr:nth-child(even) {
-        @apply bg-gray-50;
-    }
-    .voices-table tbody tr:first-child {
-        @apply bg-blue-50;
-    }
-
-    /* Tag Styles */
-    .gender-tag-male {
-        @apply bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold;
-    }
-    .gender-tag-female {
-        @apply bg-pink-100 text-pink-800 px-2 py-1 rounded-full text-xs font-semibold;
-    }
-    .language-tag-turkish {
-        @apply bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold;
-    }
-    .language-tag-english {
-        @apply bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-semibold;
-    }
-
-    /* Pagination Styles */
-    .pagination-container {
-        @apply bg-white px-4 py-6 flex items-center justify-between border-t border-gray-200 sm:px-6;
-    }
-    .pagination-nav {
-        @apply relative z-0 inline-flex rounded-md shadow-sm -space-x-px;
-    }
-    .pagination-current {
-        @apply relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-500 text-white text-sm font-medium;
-    }
-    .pagination-link {
-        @apply relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50;
-    }
-
-    /* Empty State */
-    .empty-state {
-        @apply text-center py-12 bg-gray-100;
-    }
-</style>
 {% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="bg-white shadow-xl rounded-lg overflow-hidden">
-            <div class="bg-gradient-to-r from-blue-500 to-purple-600 p-6">
-                <h1 class="text-4xl font-extrabold text-white text-center tracking-wide">
-                    Ses Kayıtları Arşivi
-                </h1>
-            </div>
+<style>
+/* Genel Stil */
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+    }
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 bg-gray-100">
-                <div class="stats-card">
-                    <div>
-                        <h3 class="stats-card-title">Toplam Ses Kayıtları</h3>
-                        <p class="stats-card-value text-blue-600">{{ total_voices }}</p>
-                    </div>
-                    {% comment %} <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-                    </svg> {% endcomment %}
-                </div>
+    h2 {
+        text-align: center;
+        color: #333;
+    }
 
-                <div class="stats-card">
-                    <div>
-                        <h3 class="stats-card-title">Dil Dağılımı</h3>
-                        <p class="text-xl font-bold">
-                            <span class="text-blue-500">Türkçe:</span> {{ total_turkish_voices }} 
-                            | <span class="text-green-500">İngilizce:</span> {{ total_english_voices }}
-                        </p>
-                    </div>
-                    {% comment %} <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M5.501 6.5h13M5 20v-4.5h1.5v4.5H5z"></path>
-                    </svg> {% endcomment %}
-                </div>
+    /* Tablo Stili */
+    table {
+        width: 100%;
+        margin: 20px auto;
+        border-collapse: collapse;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
 
-                <div class="stats-card">
-                    <div>
-                        <h3 class="stats-card-title">Cinsiyet Dağılımı</h3>
-                        <p class="text-xl font-bold">
-                            <span class="text-blue-500">Erkek:</span> {{ total_male_voices }} 
-                            | <span class="text-pink-500">Kadın:</span> {{ total_female_voices }}
-                        </p>
-                    </div>
-                    {% comment %} <svg class="w-6 h-6 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4V16m0 0l-4-4m4 4l4-4M3 12a9 9 0 1018 0 9 9 0 00-18 0z"></path>
-                    </svg> {% endcomment %}
-                </div>
-            </div>
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
 
-            {% if voices %}
-            <div class="overflow-x-auto">
-                <table class="voices-table">
-                    <thead>
-                        <tr>
-                            <th class="px-6 py-4 text-left">Kelime</th>
-                            <th class="px-6 py-4 text-left">Ses Sahibi</th>
-                            <th class="px-6 py-4 text-left">Cinsiyet</th>
-                            <th class="px-6 py-4 text-left">Dil</th>
-                            <th class="px-6 py-4 text-left">Süre (sn)</th>
-                            <th class="px-6 py-4 text-left">Tarih</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for voice in voices %}
-                        <tr>
-                            <td class="px-6 py-4">
-                                <span class="font-medium text-gray-800">
-                                    {{ voice.word|default:'Kayıtsız Ses' }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="font-semibold text-gray-700">
-                                    {{ voice.owner_name }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="{% if voice.owner_gender == 'male' %}gender-tag-male{% else %}gender-tag-female{% endif %}">
-                                    {% if voice.owner_gender == 'male' %}
-                                        Erkek
-                                    {% else %}
-                                        Kadın
-                                    {% endif %}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="{% if voice.language == 'Turkish' %}language-tag-turkish{% else %}language-tag-english{% endif %}">
-                                    {{ voice.language }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-gray-600">
-                                {{ voice.duration|floatformat:2|default:'-' }}
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-500">
-                                {{ voice.created_at|date:"d.m.Y H:i" }}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+    /* Sıralanabilir Sütun Stili */
+    th {
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        position: relative;
+        transition: background-color 0.3s;
+    }
 
-            {% if voices.has_other_pages %}
-            <div class="pagination-container">
-                <div class="flex-1 flex justify-center">
-                    <nav class="pagination-nav">
-                        {% if voices.has_previous %}
-                        <a href="?page={{ voices.previous_page_number }}" 
-                           class="pagination-link">
-                            Önceki Sayfa
-                        </a>
-                        {% endif %}
+    th:hover {
+        background-color: #0056b3;
+    }
 
-                        {% for num in voices.paginator.page_range %}
-                            {% if voices.number == num %}
-                                <span class="pagination-current">
-                                    {{ num }}
-                                </span>
-                            {% else %}
-                                <a href="?page={{ num }}" 
-                                   class="pagination-link">
-                                    {{ num }}
-                                </a>
-                            {% endif %}
-                        {% endfor %}
+    th a {
+        color: white;
+        text-decoration: none;
+    }
 
-                        {% if voices.has_next %}
-                        <a href="?page={{ voices.next_page_number }}" 
-                           class="pagination-link">
-                            Sonraki Sayfa
-                        </a>
-                        {% endif %}
-                    </nav>
-                </div>
-            </div>
-            {% endif %}
+    .sort-icon {
+        font-size: 12px;
+        margin-left: 5px;
+        opacity: 0.7;
+        transition: opacity 0.3s;
+    }
 
-            {% else %}
-            <div class="empty-state">
-                {% comment %} <svg class="mx-auto h-20 w-20 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-                </svg> {% endcomment %}
-                <h2 class="mt-4 text-2xl font-bold text-gray-600">Henüz ses kaydı bulunmamaktadır</h2>
-                <p class="mt-2 text-sm text-gray-500">Yeni ses kayıtları ekleyebilirsiniz.</p>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
+    th:hover .sort-icon {
+        opacity: 1;
+    }
+
+
+    tr:hover {
+        background-color: #e0e0e0; /* Daha koyu bir gri ton */
+    }
+    
+    /* Tıklanabilir Satırlar */
+    /* tbody tr {
+        cursor: pointer;
+    } */
+</style>
+<table border="1">
+    <thead>
+        <tr>
+            <th>Yükleyen Kullanıcı</th>
+            <th>Sesteki Kelime</th>
+            <th>Ses Dosyası</th>
+            <th>Uzunluğu (saniye)</th>
+            <th>Ses Sahibinin İsmi</th>
+            <th>Ses Sahibinin Soyadı</th>
+            <th>Ses Sahibinin Cinsiyeti</th>
+            <th>Eklenme Tarihi</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for voice in voices %}
+        <tr>
+            <td>{{ voice.created_by }}</td>
+            <td>{{ voice.word }}</td>
+            <td>{{ voice.file }}</td>
+            <td>{{ voice.duration }}</td>
+            <td>{{ voice.owner_name }}</td>
+            <td>{{ voice.owner_surname }}</td>
+            <td>{{ voice.owner_gender }}</td>
+            <td>{{ voice.created_at }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7">Ses bulunamadı.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock content %}

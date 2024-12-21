@@ -24,19 +24,16 @@ class Users(AbstractUser):
 
 class Voices(models.Model):
     id = models.AutoField(primary_key=True)
-    created_by = models.ForeignKey("Users", on_delete=models.CASCADE, related_name="voices")
+    created_by = models.ForeignKey("Users", on_delete=models.CASCADE, related_name="voices", null=True)
     word = models.CharField(max_length=255, blank=True, null=True)  # Sesin başlığı veya açıklaması
     file = models.FileField(upload_to="voices/")  # Ses dosyasının yolu
     duration = models.FloatField(blank=True, null=True)  # Sesin süresi (saniye)
-    owner_name = models.CharField(max_length=255)  # İsmi "Ad Soyad" formatında
+    owner_name = models.CharField(max_length=255)  # isim
+    owner_surname = models.CharField(max_length=255, null=True) # soyisim
     owner_gender = models.CharField(
         max_length=10,
         choices=[("male", "Erkek"), ("female", "Kadın")],
     )  # Cinsiyet
-    language = models.CharField(
-        max_length=20,
-        choices=[("Turkish", "Türkçe"), ("English", "İngilizce")],
-    )  # Dil bilgisi
     created_at = models.DateTimeField(auto_now_add=True)  # Oluşturulma tarihi
 
     def __str__(self):
