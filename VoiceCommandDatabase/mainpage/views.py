@@ -27,7 +27,7 @@ def add_voice(request):
         print(form.errors)
     else:
         form = VoiceForm()    
-    return render(request, "mainpage/add_voice.html", {'form':form})
+    return render(request, "mainpage/add_voice.html", {'form':form, 'error' : form.errors})
 
 @login_required
 def record_voice(request):
