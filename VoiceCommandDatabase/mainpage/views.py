@@ -23,7 +23,7 @@ def add_voice(request):
         if form.is_valid():
             form.instance.created_by = request.user
             form.save()
-            return redirect('index')
+            return redirect('show_voices')
         print(form.errors)
     else:
         form = VoiceForm()    
