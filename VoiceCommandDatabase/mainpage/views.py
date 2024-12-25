@@ -58,11 +58,13 @@ def show_voices(request):
     if request.user.is_superuser:
         # Eğer kullanıcı superuser ise tüm sesleri göster
         voices_list = Voices.objects.all().order_by('-created_at')
+        users_list = User.objects.all()
     else:
         # Eğer normal kullanıcı ise sadece kendi seslerini göster
         voices_list = Voices.objects.filter(created_by=request.user).order_by('-created_at')
+        users_list = []
 
-    return render(request, "mainpage/show_voices.html", {'voices': voices_list})
+    return render(request, "mainpage/show_voices.html", {'voices': voices_list, 'users': users_list})
 
 @login_required
 def delete_voice(request, voice_id):

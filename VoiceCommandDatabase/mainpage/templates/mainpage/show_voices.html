@@ -125,6 +125,17 @@
 </style>
 
 <div class="filter-container">
+    {% if user.is_superuser %}
+    <div class="filter-group">
+        <label for="user-filter">Sesi Oluşturan Kullanıcı Filtresi:</label>
+        <select id="user-filter" onchange="filterTable()">
+            <option value="">Tümü</option>
+            {% for user in users %}
+            <option value="{{ user.username }}">{{ user }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endif %}   
     <div class="filter-group">
         <label for="gender-filter">Cinsiyet Filtresi:</label>
         <select id="gender-filter" onchange="filterTable()">
@@ -241,16 +252,20 @@ function playAudio(url, button) {
 function filterTable() {
     const genderFilter = document.getElementById('gender-filter').value.toLowerCase();
     const wordFilter = document.getElementById('word-filter').value.toLowerCase();
+    const userFilter = document.getElementById('user-filter').value.toLowerCase();
+    console.log(genderFilter, wordFilter, userFilter);
     const rows = document.querySelectorAll('tbody tr');
 
     rows.forEach(row => {
         const gender = row.children[6].textContent.toLowerCase();
         const word = row.children[1].textContent.toLowerCase();
+        const user = row.children[0].textContent.toLowerCase();
         
         const genderMatch = !genderFilter || gender === genderFilter;
         const wordMatch = !wordFilter || word === wordFilter;
+        const userMatch = !userFilter || user === userFilter;
 
-        row.style.display = genderMatch && wordMatch ? '' : 'none';
+        row.style.display = genderMatch && wordMatch && userMatch ? '' : 'none';
     });
 }
 </script>
