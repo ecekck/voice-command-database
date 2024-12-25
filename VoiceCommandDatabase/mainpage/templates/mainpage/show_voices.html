@@ -155,7 +155,9 @@
 <table border="1">
     <thead>
         <tr>
+            {% if user.is_superuser %}
             <th>Yükleyen Kullanıcı</th>
+            {% endif %}
             <th>Sesteki Kelime</th>
             <th>Ses Dosyası</th>
             <th>Uzunluğu (saniye)</th>
@@ -164,14 +166,18 @@
             <th>Ses Sahibinin Cinsiyeti</th>
             <th>Eklenme Tarihi</th>
             <th>Dinle</th>
+            <th>İndir</th>
+            <th>Sil</th>
         </tr>
     </thead>
     <tbody>
         {% for voice in voices %}
         <tr>
+            {% if user.is_superuser %}
             <td>{{ voice.created_by }}</td>
+            {% endif %}
             <td>{{ voice.word }}</td>
-            <td>{{ voice.file }}</td>
+            <td>{{ voice.file|cut:"voices/" }}</td>
             <td>{{ voice.duration }}</td>
             <td>{{ voice.owner_name }}</td>
             <td>{{ voice.owner_surname }}</td>
@@ -181,6 +187,12 @@
                 <button class="play-button" onclick="playAudio('{{ voice.file.url }}', this)">
                     ▶ Oynat
                 </button>
+            </td>
+            <td>
+                <a href="{% url 'download_voice' voice.id %}" class="btn btn-success">İndir</a>
+            </td>
+            <td>
+                <a href="{% url 'delete_voice' voice.id %}" class="btn btn-danger">Sil</a>
             </td>
         </tr>
         {% empty %}

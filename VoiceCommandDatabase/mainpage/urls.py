@@ -10,4 +10,6 @@ urlpatterns = [
     path("ses_ekle/", views.add_voice, name="add_voice"),
     path("ses_kaydet/", views.record_voice, name="record_voice"),
     path("sesleri_goruntule/", views.show_voices, name="show_voices"),
+    path("sesi_sil/<int:voice_id>/", views.delete_voice, name="delete_voice"),
+    path("sesi_indir/<int:voice_id>/", views.download_voice, name="download_voice"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
