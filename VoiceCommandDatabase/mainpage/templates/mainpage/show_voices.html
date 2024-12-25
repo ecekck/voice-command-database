@@ -21,6 +21,8 @@
     .filter-container {
         display: flex;
         gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
         margin: 20px;
         padding: 15px;
         background-color: white;
@@ -32,6 +34,7 @@
         display: flex;
         flex-direction: column;
         gap: 5px;
+        text-align: center;
     }
 
     .filter-group label {
@@ -127,7 +130,7 @@
 <div class="filter-container">
     {% if user.is_superuser %}
     <div class="filter-group">
-        <label for="user-filter">Sesi Oluşturan Kullanıcı Filtresi:</label>
+        <label for="user-filter">Sesi Oluşturan Kullanıcı:</label>
         <select id="user-filter" onchange="filterTable()">
             <option value="">Tümü</option>
             {% for user in users %}
@@ -137,7 +140,7 @@
     </div>
     {% endif %}   
     <div class="filter-group">
-        <label for="gender-filter">Cinsiyet Filtresi:</label>
+        <label for="gender-filter">Cinsiyet:</label>
         <select id="gender-filter" onchange="filterTable()">
             <option value="">Tümü</option>
             <option value="male">Erkek</option>
@@ -145,7 +148,7 @@
         </select>
     </div>
     <div class="filter-group">
-        <label for="word-filter">Kelime Filtresi:</label>
+        <label for="word-filter">Kelime:</label>
         <select id="word-filter" onchange="filterTable()">
             <option value="">Tümü</option>
             <option value="isik">Işığı</option>
@@ -171,7 +174,7 @@
             {% endif %}
             <th>Sesteki Kelime</th>
             <th>Ses Dosyası</th>
-            <th>Uzunluğu (saniye)</th>
+            <th>Uzunluğu</th>
             <th>Ses Sahibinin İsmi</th>
             <th>Ses Sahibinin Soyadı</th>
             <th>Ses Sahibinin Cinsiyeti</th>
@@ -189,21 +192,21 @@
             {% endif %}
             <td>{{ voice.word }}</td>
             <td>{{ voice.file|cut:"voices/" }}</td>
-            <td>{{ voice.duration }}</td>
+            <td>{{ voice.duration }} saniye</td>
             <td>{{ voice.owner_name }}</td>
             <td>{{ voice.owner_surname }}</td>
             <td>{{ voice.owner_gender }}</td>
             <td>{{ voice.created_at }}</td>
             <td>
                 <button class="play-button" onclick="playAudio('{{ voice.file.url }}', this)">
-                    ▶ Oynat
+                    <i class="fa fa-play"></i>
                 </button>
             </td>
             <td>
-                <a href="{% url 'download_voice' voice.id %}" class="btn btn-success">İndir</a>
+                <a href="{% url 'download_voice' voice.id %}" class="btn btn-success" title="İndir"><i class="fa fa-download"></i></a>
             </td>
             <td>
-                <a href="{% url 'delete_voice' voice.id %}" class="btn btn-danger">Sil</a>
+                <a href="{% url 'delete_voice' voice.id %}" class="btn btn-danger" title="Sil"><i class="fa fa-trash"></i></a>
             </td>
         </tr>
         {% empty %}
@@ -223,27 +226,37 @@ function playAudio(url, button) {
 
     console.log(url);
     
-    if (currentButton) {
-        currentButton.textContent = '▶ Oynat';
+    // Eğer başka bir ses çalıyorsa, önceki butonu eski haline getir
+    if (currentButton && currentlyPlaying !== url) {
+        currentButton.querySelector('i').classList.remove('fa-pause');
+        currentButton.querySelector('i').classList.add('fa-play'); // Play simgesine dönüştür
         currentButton.classList.remove('playing');
     }
 
+    // Eğer aynı ses dosyası çalıyor ve butona tıklanıyorsa, durdur
     if (currentlyPlaying === url && !audioPlayer.paused) {
         audioPlayer.pause();
         audioPlayer.currentTime = 0;
         currentlyPlaying = null;
+        button.querySelector('i').classList.remove('fa-pause');
+        button.querySelector('i').classList.add('fa-play');  // Play simgesine dönüştür
+        button.classList.remove('playing');
         return;
     }
 
+    // Yeni ses dosyasını başlat
     audioPlayer.src = url;
     audioPlayer.play();
     currentlyPlaying = url;
     currentButton = button;
-    button.textContent = '⏸ Durdur';
+    button.querySelector('i').classList.remove('fa-play');
+    button.querySelector('i').classList.add('fa-pause'); // Play simgesini Pause simgesine dönüştür
     button.classList.add('playing');
 
+    // Ses bitince buton metnini ve simgesini değiştirme
     audioPlayer.onended = function() {
-        button.textContent = '▶ Oynat';
+        button.querySelector('i').classList.remove('fa-pause');
+        button.querySelector('i').classList.add('fa-play'); // Pause simgesini Play simgesiyle değiştir
         button.classList.remove('playing');
         currentlyPlaying = null;
     };

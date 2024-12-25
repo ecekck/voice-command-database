@@ -26,7 +26,7 @@ class VoiceForm(forms.ModelForm):
         audio = File(file)
         if not audio or not hasattr(audio, 'info') or not hasattr(audio.info, 'length'):
             raise forms.ValidationError("Dosya içeriği geçersiz. Lütfen başka bir dosya yükleyin.")
-        duration = audio.info.length
+        duration = round(audio.info.length)
 
         if duration > 60:
             raise forms.ValidationError("Ses kaydı 60 saniyeyi aşamaz.")
@@ -97,7 +97,7 @@ class VoiceRecorderForm(forms.ModelForm):
 
         try:
             # Validate audio duration
-            duration = self.validate_audio_file(audio_file)
+            duration = round(self.validate_audio_file(audio_file))
             
             if duration > 60:
                 raise forms.ValidationError("Ses kaydı 60 saniyeyi aşamaz.")
