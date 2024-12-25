@@ -2,9 +2,10 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Voices, Users
 from django.core.paginator import Paginator
-from .forms import VoiceForm
+from .forms import VoiceForm, VoiceRecorderForm
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 
 @login_required
 def index(request):
@@ -29,10 +30,27 @@ def add_voice(request):
         form = VoiceForm()    
     return render(request, "mainpage/add_voice.html", {'form':form, 'error' : form.errors})
 
-@login_required
 def record_voice(request):
-    # Logic for recording voices would be implemented here
-    return render(request, "mainpage/record_voice.html")
+    if request.method == 'POST':
+        try:
+            form = VoiceRecorderForm(request.POST, request.FILES, request=request)
+            if form.is_valid():
+                form.save()
+                print("forms save edildi")
+                return redirect('show_voices')
+            else:
+                errors = form.errors.as_json()
+                return JsonResponse({'status': 'error', 'errors': errors}, status=400)
+                
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Bir hata oluştu: {str(e)}'
+            }, status=500)
+    else:
+        form = VoiceRecorderForm()
+    
+    return render(request, 'mainpage/record_voice.html', {'form': form, 'error': form.errors})
 
 @login_required
 def show_voices(request):

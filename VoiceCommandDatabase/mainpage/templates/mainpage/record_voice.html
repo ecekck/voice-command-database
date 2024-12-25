@@ -5,6 +5,13 @@ Ses Kaydet
 {% endblock title %}
 
 {% block content %}
+
+{% if error %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+</div>
+{% endif %}
+
 <div class="container">
   <h1 class="title">VERİTABANINA YENİ BİR SES KAYDET VE EKLE</h1>
     <br />
@@ -18,6 +25,41 @@ Ses Kaydet
     <button id="deleteRecording" class="button delete hidden">Kaydı Sil</button>
   </div>
   <form id="uploadForm" method="POST" enctype="multipart/form-data" class="upload-form">
+    {% csrf_token %}
+    <div class="form-group mb-3">
+        <label for="id_owner_name">İsim</label>
+        <input type="text" id="owner_name" name="owner_name" class="form-control" required 
+            pattern="^[A-Za-zÇçĞğİıÖöŞşÜü\s]+$" title="İsim sadece harflerden oluşmalıdır." placeholder="İsim giriniz">
+    </div>
+    <div class="form-group mb-3">
+        <label for="id_owner_surname">Soyisim</label>
+        <input type="text" id="owner_surname" name="owner_surname" class="form-control" required 
+            pattern="^[A-Za-zÇçĞğİıÖöŞşÜü\s]+$" title="Soyisim sadece harflerden oluşmalıdır." placeholder="Soyisim giriniz">
+    </div>
+    <div class="form-group mb-3">
+      <label for="id_owner_gender">Cinsiyet</label>
+      <select id="owner_gender" name="owner_gender" class="form-control" required>
+          <option value="">Cinsiyet Seçiniz</option>
+          <option value="male">Erkek</option>
+          <option value="female">Kadın</option>
+      </select>
+    </div>
+    <div class="form-group mb-3">
+      <label for="id_word">Seste Söylenen Kelime</label>
+      <select id="word" name="word" class="form-control" required>
+          <option value="">Kelime Seçiniz</option>
+          <option value="isik">Işığı</option>
+          <option value="alarm">Alarmı</option>
+          <option value="multimedya">Multimedyayı</option>
+          <option value="aydinlatma">Aydınlatmayı</option>
+          <option value="parlaklik">Parlaklığı</option>
+          <option value="iklimlendirme">İklimlendirmeyi</option>
+          <option value="oda">Odayı</option>
+          <option value="fan">Fanı</option>
+          <option value="isitma">Isıtmayı</option>
+          <option value="sicaklik">Sıcaklığı</option>
+      </select>
+      </div>
     <input type="file" id="audioFile" name="audio_file" hidden />
     <button type="submit" id="uploadButton" class="button upload" disabled>Kaydı Yükle</button>
   </form>
@@ -155,48 +197,164 @@ const recordIndicator = document.getElementById("recordIndicator");
 const deleteButton = document.getElementById("deleteRecording");
 
 startButton.addEventListener("click", async () => {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  mediaRecorder = new MediaRecorder(stream);
-  mediaRecorder.start();
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream, {
+            mimeType: 'audio/webm'  // Using webm format for better compatibility
+        });
+        mediaRecorder.start();
 
-  recordIndicator.classList.remove("hidden");
-  audioChunks = [];
+        recordIndicator.classList.remove("hidden");
+        audioChunks = [];
 
-  mediaRecorder.addEventListener("dataavailable", (event) => {
-    audioChunks.push(event.data);
-  });
+        mediaRecorder.addEventListener("dataavailable", (event) => {
+            audioChunks.push(event.data);
+        });
 
-  mediaRecorder.addEventListener("stop", () => {
-    recordIndicator.classList.add("hidden");
-    const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
-    const audioUrl = URL.createObjectURL(audioBlob);
-    audioPlayback.src = audioUrl;
+        mediaRecorder.addEventListener("stop", async () => {
+            recordIndicator.classList.add("hidden");
+            
+            // Create blob from chunks
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            
+            // Convert to wav format using Web Audio API
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const audioData = await audioBlob.arrayBuffer();
+            const audioBuffer = await audioContext.decodeAudioData(audioData);
+            
+            // Create WAV file
+            const wavBlob = await convertToWav(audioBuffer);
+            
+            // Create preview URL
+            const audioUrl = URL.createObjectURL(wavBlob);
+            audioPlayback.src = audioUrl;
 
-    // Convert Blob to File for Upload
-    const audioFile = new File([audioBlob], "recording.wav", { type: "audio/wav" });
-    const dataTransfer = new DataTransfer();
-    dataTransfer.items.add(audioFile);
-    audioFileInput.files = dataTransfer.files;
+            // Create File object for upload
+            const audioFile = new File([wavBlob], "recording.wav", { type: "audio/wav" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(audioFile);
+            audioFileInput.files = dataTransfer.files;
 
-    uploadButton.disabled = false;
-    deleteButton.classList.remove("hidden");
-  });
+            uploadButton.disabled = false;
+            deleteButton.classList.remove("hidden");
+        });
 
-  startButton.disabled = true;
-  stopButton.disabled = false;
+        startButton.disabled = true;
+        stopButton.disabled = false;
+    } catch (error) {
+        console.error('Error accessing microphone:', error);
+        alert('Mikrofona erişilemedi. Lütfen mikrofon izinlerini kontrol edin.');
+    }
 });
 
 stopButton.addEventListener("click", () => {
-  mediaRecorder.stop();
-  startButton.disabled = false;
-  stopButton.disabled = true;
+    mediaRecorder.stop();
+    startButton.disabled = false;
+    stopButton.disabled = true;
 });
 
 deleteButton.addEventListener("click", () => {
-  audioPlayback.src = "";
-  audioFileInput.value = "";
-  uploadButton.disabled = true;
-  deleteButton.classList.add("hidden");
+    audioPlayback.src = "";
+    audioFileInput.value = "";
+    uploadButton.disabled = true;
+    deleteButton.classList.add("hidden");
+});
+
+// Function to convert AudioBuffer to WAV format
+function convertToWav(audioBuffer) {
+    const numOfChannels = audioBuffer.numberOfChannels;
+    const sampleRate = audioBuffer.sampleRate;
+    const format = 1; // PCM
+    const bitDepth = 16;
+    
+    const bytesPerSample = bitDepth / 8;
+    const blockAlign = numOfChannels * bytesPerSample;
+    
+    const buffer = audioBuffer.getChannelData(0);
+    const samples = buffer.length;
+    const dataSize = samples * blockAlign;
+    const arrayBuffer = new ArrayBuffer(44 + dataSize);
+    const dataView = new DataView(arrayBuffer);
+    
+    // RIFF identifier
+    writeString(dataView, 0, 'RIFF');
+    // file length
+    dataView.setUint32(4, 36 + dataSize, true);
+    // RIFF type
+    writeString(dataView, 8, 'WAVE');
+    // format chunk identifier
+    writeString(dataView, 12, 'fmt ');
+    // format chunk length
+    dataView.setUint32(16, 16, true);
+    // sample format (raw)
+    dataView.setUint16(20, format, true);
+    // channel count
+    dataView.setUint16(22, numOfChannels, true);
+    // sample rate
+    dataView.setUint32(24, sampleRate, true);
+    // byte rate (sample rate * block align)
+    dataView.setUint32(28, sampleRate * blockAlign, true);
+    // block align (channel count * bytes per sample)
+    dataView.setUint16(32, blockAlign, true);
+    // bits per sample
+    dataView.setUint16(34, bitDepth, true);
+    // data chunk identifier
+    writeString(dataView, 36, 'data');
+    // data chunk length
+    dataView.setUint32(40, dataSize, true);
+    
+    // Write the PCM samples
+    const offset = 44;
+    for (let i = 0; i < samples; i++) {
+        const sample = Math.max(-1, Math.min(1, buffer[i]));
+        dataView.setInt16(offset + (i * bytesPerSample), sample * 0x7FFF, true);
+    }
+    
+    return new Blob([arrayBuffer], { type: 'audio/wav' });
+}
+
+function writeString(dataView, offset, string) {
+    for (let i = 0; i < string.length; i++) {
+        dataView.setUint8(offset + i, string.charCodeAt(i));
+    }
+}
+
+document.getElementById("uploadForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+    
+    if (!audioFileInput.files.length) {
+        alert("Lütfen bir ses kaydı ekleyin!");
+        return;
+    }
+
+    const formData = new FormData(this);
+
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',  // For CSRF token
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert(data.message);
+            // Reset form and audio elements
+            audioPlayback.src = "";
+            audioFileInput.value = "";
+            uploadButton.disabled = true;
+            deleteButton.classList.add("hidden");
+            this.reset();
+        } else {
+            const errorMessage = data.errors ? JSON.parse(data.errors).__all__[0].message : data.message;
+            alert(errorMessage);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
 });
 </script>
 {% endblock content %}
