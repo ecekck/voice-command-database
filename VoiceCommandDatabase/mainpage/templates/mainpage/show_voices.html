@@ -188,16 +188,16 @@
     </thead>
     <tbody>
         {% for voice in voices %}
-        <tr>
+        <tr data-voice-id="{{ voice.id }}">
             {% if user.is_superuser %}
             <td>{{ voice.created_by }}</td>
             {% endif %}
-            <td>{{ voice.word }}</td>
+            <td data-word="{{ voice.word }}">{{ voice.word }}</td>
             <td>{{ voice.file|cut:"voices/" }}</td>
             <td>{{ voice.duration }} saniye</td>
-            <td>{{ voice.owner_name }}</td>
-            <td>{{ voice.owner_surname }}</td>
-            <td>{{ voice.owner_gender }}</td>
+            <td data-owner-name>{{ voice.owner_name }}</td>
+            <td data-owner-surname>{{ voice.owner_surname }}</td>
+            <td data-owner-gender data-gender="{{ voice.owner_gender }}">{{ voice.owner_gender }}</td>
             <td>{{ voice.created_at }}</td>
             <td>   
                 <button class="play-button" onclick="playAudio('{{ voice.file.url }}', this)">
@@ -207,9 +207,9 @@
                 <a href="{% url 'download_voice' voice.id %}" class="btn btn-success" title="İndir"><i class="fa fa-download"></i></a>
             </td>
             <td>
-                <a class="btn btn-info" title="Düzenle">
+                <button class="btn btn-info" onclick="openEditModal('{{ voice.id }}')" title="Düzenle">
                     <i class="fas fa-edit"></i>
-                </a>
+                </button>
             </td>
             <td>
                 <a href="{% url 'delete_voice' voice.id %}" class="btn btn-danger" title="Sil"><i class="fa fa-trash"></i></a>
@@ -222,6 +222,60 @@
         {% endfor %}
     </tbody>
 </table>
+
+<!-- Add to your template before the closing body tag -->
+<div class="modal fade" id="editVoiceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ses Kaydını Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editVoiceForm" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" id="edit-voice-id" name="voice_id">
+                    <div class="mb-3">
+                        <label for="edit-word" class="form-label">Kelime</label>
+                        <select class="form-select" id="edit-word" name="word" required>
+                            <option value="">Kelime Seçiniz</option>
+                            <option value="isik">Işığı</option>
+                            <option value="alarm">Alarmı</option>
+                            <option value="multimedya">Multimedyayı</option>
+                            <option value="aydinlatma">Aydınlatmayı</option>
+                            <option value="parlaklik">Parlaklığı</option>
+                            <option value="iklimlendirme">İklimlendirmeyi</option>
+                            <option value="oda">Odayı</option>
+                            <option value="fan">Fanı</option>
+                            <option value="isitma">Isıtmayı</option>
+                            <option value="sicaklik">Sıcaklığı</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-owner-name" class="form-label">İsim</label>
+                        <input type="text" class="form-control" id="edit-owner-name" name="owner_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-owner-surname" class="form-label">Soyisim</label>
+                        <input type="text" class="form-control" id="edit-owner-surname" name="owner_surname" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-owner-gender" class="form-label">Cinsiyet</label>
+                        <select class="form-select" id="edit-owner-gender" name="owner_gender" required>
+                            <option value="male">Erkek</option>
+                            <option value="female">Kadın</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="updateVoice()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 let currentlyPlaying = null;
@@ -284,6 +338,40 @@ function filterTable() {
         const userMatch = !userFilter || user === userFilter;
 
         row.style.display = genderMatch && wordMatch && userMatch ? '' : 'none';
+    });
+}
+
+function openEditModal(voiceId) {
+    console.log("sssss");
+    const row = document.querySelector(`tr[data-voice-id="${voiceId}"]`);
+    document.getElementById('edit-voice-id').value = voiceId;
+    document.getElementById('edit-word').value = row.querySelector('[data-word]').dataset.word;
+    document.getElementById('edit-owner-name').value = row.querySelector('[data-owner-name]').textContent;
+    document.getElementById('edit-owner-surname').value = row.querySelector('[data-owner-surname]').textContent;
+    document.getElementById('edit-owner-gender').value = row.querySelector('[data-owner-gender]').dataset.gender;
+    
+    const modal = new bootstrap.Modal(document.getElementById('editVoiceModal'));
+    modal.show();
+}
+
+function updateVoice() {
+    const form = document.getElementById('editVoiceForm');
+    const formData = new FormData(form);
+    
+    fetch('{% url "edit_voice" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Güncelleme sırasında bir hata oluştu.');
+        }
     });
 }
 </script>

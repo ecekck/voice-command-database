@@ -9,6 +9,7 @@ from django.http import JsonResponse, FileResponse, Http404, HttpResponse
 from django.template.loader import render_to_string
 from weasyprint import HTML
 import os
+from django.views.decorators.http import require_POST
 from VoiceCommandDatabase import settings
 
 @login_required
@@ -112,3 +113,19 @@ def download_voice_list(request):
         messages.error(request, "PDF oluşturulurken bir hata oluştu.")
         return redirect('your_list_view_name')
 
+@require_POST
+@login_required
+def edit_voice(request):
+    try:
+        voice_id = request.POST.get('voice_id')
+        voice = Voices.objects.get(id=voice_id)
+        
+        voice.word = request.POST.get('word')
+        voice.owner_name = request.POST.get('owner_name')
+        voice.owner_surname = request.POST.get('owner_surname')
+        voice.owner_gender = request.POST.get('owner_gender')
+        voice.save()
+        
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
