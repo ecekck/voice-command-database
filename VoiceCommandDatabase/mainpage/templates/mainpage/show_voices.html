@@ -342,7 +342,6 @@ function filterTable() {
 }
 
 function openEditModal(voiceId) {
-    console.log("sssss");
     const row = document.querySelector(`tr[data-voice-id="${voiceId}"]`);
     document.getElementById('edit-voice-id').value = voiceId;
     document.getElementById('edit-word').value = row.querySelector('[data-word]').dataset.word;

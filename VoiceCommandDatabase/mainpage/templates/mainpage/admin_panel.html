@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}
+Admin Paneli
+{% endblock title %}
+
+{% block content %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+    }
+
+    /* Tablo Stili */
+    table {
+        width: 100%;
+        margin: 20px auto;
+        border-collapse: collapse;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        background-color: white;
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        position: relative;
+        transition: background-color 0.3s;
+    }
+
+    th:hover {
+        background-color: #0056b3;
+    }
+
+    th a {
+        color: white;
+        text-decoration: none;
+    }
+
+    tr:hover {
+        background-color: #e0e0e0;
+    }
+
+    .sort-icon {
+        font-size: 12px;
+        margin-left: 5px;
+        opacity: 0.7;
+        transition: opacity 0.3s;
+    }
+
+    th:hover .sort-icon {
+        opacity: 1;
+    }
+
+    h2 {
+        text-align: center;
+        color: #333;
+    }
+</style>
+
+
+{% comment %} Super userlar tablosu {% endcomment %}
+<h1 style="text-align: center; margin-top: 20px;">Yönetici Listesi</h1>
+<table border="1">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Kullanıcı Adı</th>
+            <th>Ad</th>
+            <th>Soyad</th>
+            <th>Email</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        {% if user.is_superuser %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.first_name }}</td>
+            <td>{{ user.last_name }}</td>
+            <td>{{ user.email }}</td>
+        </tr>
+        {% endif %}        
+        {% empty %}
+        <tr>
+            <td colspan="6">Super user bulunamadı.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% comment %} Tüm kullanıcılar tablosu {% endcomment %}
+<h1 style="text-align: center; margin-top: 20px;">Kullanıcı Listesi</h1>
+<table border="1">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Kullanıcı Adı</th>
+            <th>Ad</th>
+            <th>Soyad</th>
+            <th>Email</th>
+            <th>Düzenle</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        {% if not user.is_superuser %}
+        <tr data-user-id="{{ user.id }}">
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.first_name }}</td>
+            <td>{{ user.last_name }}</td>
+            <td>{{ user.email }}</td>
+            <td>
+                <button class="btn btn-info" onclick="openEditModal('{{ user.id }}')" title="Düzenle">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </td>
+        </tr>
+        {% endif %}        
+        {% empty %}
+        <tr>
+            <td colspan="6">Kullanıcı bulunamadı.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+
+<!-- Add to your template before the closing body tag -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Kullanıcı Bilgilerini Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editUserForm" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" id="edit-user-id" name="user_id">
+                    <div class="mb-3">
+                        <label for="edit-username" class="form-label">Kullanıcı Adı</label>
+                        <input type="text" class="form-control" id="edit-username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-name" class="form-label">İsim</label>
+                        <input type="text" class="form-control" id="edit-name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-surname" class="form-label">Soyisim</label>
+                        <input type="text" class="form-control" id="edit-surname" name="surname" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="edit-email" name="email" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="updateUser()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+<!-- Edit modal -->
+function openEditModal(userId) {
+    const user = document.querySelector(`tr[data-user-id="${userId}"]`);
+    const username = user.children[1].textContent;
+    const name = user.children[2].textContent;
+    const surname = user.children[3].textContent;
+    const email = user.children[4].textContent;
+
+    console.log(userId, username, name, surname, email);
+
+    document.querySelector("#edit-user-id").value = userId;
+    document.querySelector("#edit-username").value = username;
+    document.querySelector("#edit-name").value = name;
+    document.querySelector("#edit-surname").value = surname;
+    document.querySelector("#edit-email").value = email;
+
+    const modal = new bootstrap.Modal(document.getElementById("editUserModal"));
+    modal.show();
+}
+
+function updateUser() {
+    const form = document.querySelector("#editUserForm");
+    const formData = new FormData(form);
+
+    fetch("/update_user/", {
+        method: "POST",
+        body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert("Kullanıcı güncellenirken bir hata oluştu.");
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+    });
+}
+</script>
+{% endblock content %}

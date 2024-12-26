@@ -14,4 +14,6 @@ urlpatterns = [
     path("sesi_indir/<int:voice_id>/", views.download_voice, name="download_voice"),
     path("listeyi_indir/", views.download_voice_list, name="download_voice_list"),
     path('edit_voice/', views.edit_voice, name='edit_voice'),
+    path("admin_paneli/", views.admin_panel, name="admin_panel"),
+    path("update_user/", views.update_user, name="update_user"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

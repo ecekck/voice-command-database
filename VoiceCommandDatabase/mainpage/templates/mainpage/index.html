@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-ANASAYFA
+Anasayfa
 {% endblock title %}
 
 {% block content %}
@@ -11,12 +11,14 @@ ANASAYFA
         <a href="/ses_kaydet" class="btn btn-success btn-lg mx-3 w-25">Ses Kaydederek Ekle</a>
         <a href="/sesleri_goruntule" class="btn btn-success btn-lg mx-3 w-25">Sesleri Görüntüle</a>
     </div>
-    {% comment %} <div class="d-flex justify-content-center w-100">
-        <a href="/islemleri_goruntule" class="btn btn-success btn-lg mx-3 w-50">Tamamlanmamış İşlemleri Görüntüle</a>
-    </div> {% endcomment %}
+    {% if user.is_superuser %}
+    <div class="d-flex justify-content-center w-100">
+        <a href="/admin_paneli" class="btn btn-warning btn-lg mx-3 w-50">Admin Panelini Görüntüle</a>
+    </div>
+    {% endif %}
 </div>
 <style>
-    .btn-success {
+    .btn {
         border-radius: 10px;
         font-size: 1.2rem;
         padding: 15px 30px;
@@ -25,6 +27,11 @@ ANASAYFA
 
     .btn-success:hover {
         background-color: #28a745; /* Daha koyu bir yeşil */
+        transform: scale(1.05); /* Hafif büyüme efekti */
+    }
+
+    .btn-warning:hover {
+        background-color: #ffc107; /* Daha koyu bir sarı */
         transform: scale(1.05); /* Hafif büyüme efekti */
     }
 

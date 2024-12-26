@@ -11,6 +11,7 @@ from weasyprint import HTML
 import os
 from django.views.decorators.http import require_POST
 from VoiceCommandDatabase import settings
+from django.core.exceptions import ObjectDoesNotExist
 
 @login_required
 def index(request):
@@ -129,3 +130,52 @@ def edit_voice(request):
         return JsonResponse({'success': True})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
+    
+@login_required
+def admin_panel(request):
+    if not request.user.is_superuser:
+        return redirect('index')
+    
+    users = User.objects.all()
+    return render(request, 'mainpage/admin_panel.html', {'users': users})
+
+@login_required
+def update_user(request):
+    if request.method == 'POST':
+        try:
+            user_id = request.POST.get('user_id')
+            user = User.objects.get(id=user_id)
+            
+            # Gönderilen verileri kontrol et
+            username = request.POST.get('username')
+            first_name = request.POST.get('name')
+            last_name = request.POST.get('surname')
+            email = request.POST.get('email')
+            
+            print(first_name, last_name, email)
+
+            # Alanların boş olup olmadığını kontrol et
+            if not email:
+                return JsonResponse({'success': False, 'error': 'Email alanı boş olamaz.'})
+            
+            # Email formatı kontrolü (opsiyonel)
+            from django.core.validators import validate_email
+            from django.core.exceptions import ValidationError
+            try:
+                validate_email(email)
+            except ValidationError:
+                return JsonResponse({'success': False, 'error': 'Geçersiz email formatı.'})
+            
+            # Güncellemeyi yap
+            user.username = username
+            user.first_name = first_name
+            user.last_name = last_name
+            user.email = email
+            user.save()
+            
+            return JsonResponse({'success': True})
+        except ObjectDoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Kullanıcı bulunamadı.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Geçersiz istek yöntemi.'})
