@@ -163,6 +163,7 @@
             <option value="sicaklik">Sıcaklığı</option>
         </select>
     </div>
+    <a href="{% url 'download_voice_list' %}" class="btn btn-success" target="_blank" id="indirbtn">PDF İndir</a>
 </div>
 
 <audio id="audio-player"></audio>
@@ -181,6 +182,7 @@
             <th>Eklenme Tarihi</th>
             <th>Dinle</th>
             <th>İndir</th>
+            <th>Düzenle</th>
             <th>Sil</th>
         </tr>
     </thead>
@@ -197,13 +199,17 @@
             <td>{{ voice.owner_surname }}</td>
             <td>{{ voice.owner_gender }}</td>
             <td>{{ voice.created_at }}</td>
-            <td>
+            <td>   
                 <button class="play-button" onclick="playAudio('{{ voice.file.url }}', this)">
                     <i class="fa fa-play"></i>
-                </button>
-            </td>
+                </button></td>
             <td>
                 <a href="{% url 'download_voice' voice.id %}" class="btn btn-success" title="İndir"><i class="fa fa-download"></i></a>
+            </td>
+            <td>
+                <a class="btn btn-info" title="Düzenle">
+                    <i class="fas fa-edit"></i>
+                </a>
             </td>
             <td>
                 <a href="{% url 'delete_voice' voice.id %}" class="btn btn-danger" title="Sil"><i class="fa fa-trash"></i></a>
@@ -223,7 +229,6 @@ let currentButton = null;
 
 function playAudio(url, button) {
     const audioPlayer = document.getElementById('audio-player');
-
     console.log(url);
     
     // Eğer başka bir ses çalıyorsa, önceki butonu eski haline getir

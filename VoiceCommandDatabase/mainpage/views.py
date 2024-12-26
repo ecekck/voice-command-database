@@ -5,8 +5,11 @@ from django.core.paginator import Paginator
 from .forms import VoiceForm, VoiceRecorderForm
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, FileResponse, Http404
+from django.http import JsonResponse, FileResponse, Http404, HttpResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
 import os
+from VoiceCommandDatabase import settings
 
 @login_required
 def index(request):
@@ -84,3 +87,28 @@ def download_voice(request, voice_id):
         raise Http404("Invalid file path")
     except FileNotFoundError:
         raise Http404("File not found")
+    
+os.environ['GIO_EXTRA_MODULES'] = 'NUL'  # views.py dosyanızın en üstüne ekleyin
+
+@login_required
+def download_voice_list(request):
+    try:
+        import logging
+        logging.getLogger('weasyprint').setLevel(logging.ERROR)  # Sadece hataları göster
+        
+        if request.user.is_superuser:
+            voices = Voices.objects.all()
+        else:
+            voices = Voices.objects.filter(created_by=request.user)
+        
+        html_content = render_to_string('mainpage/download_voice_list.html', {'voices': voices})
+        pdf_file = HTML(string=html_content, base_url=request.build_absolute_uri('/')).write_pdf()
+        
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="voice_list.pdf"'
+        return response
+    except Exception as e:
+        print(f"PDF oluşturma hatası: {str(e)}")
+        messages.error(request, "PDF oluşturulurken bir hata oluştu.")
+        return redirect('your_list_view_name')
+
