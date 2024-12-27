@@ -109,6 +109,7 @@ Admin Paneli
             <th>Soyad</th>
             <th>Email</th>
             <th>Düzenle</th>
+            <th>Sil</th>
         </tr>
     </thead>
     <tbody>
@@ -124,6 +125,9 @@ Admin Paneli
                 <button class="btn btn-info" onclick="openEditModal('{{ user.id }}')" title="Düzenle">
                     <i class="fas fa-edit"></i>
                 </button>
+            </td>
+            <td>
+                <a href="{% url 'delete_user' user.id %}" class="btn btn-danger" title="Sil"><i class="fa fa-trash"></i></a>
             </td>
         </tr>
         {% endif %}        

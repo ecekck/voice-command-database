@@ -179,3 +179,61 @@ def update_user(request):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
     return JsonResponse({'success': False, 'error': 'Geçersiz istek yöntemi.'})
+
+@login_required
+def delete_user(request, user_id):
+    if request.method == 'POST':
+        try:
+            user_id = request.POST.get('user_id')
+            user = User.objects.get(id=user_id)
+            user.delete()
+            return JsonResponse({'success': True})
+        except ObjectDoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Kullanıcı bulunamadı.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Geçersiz istek yöntemi.'})
+
+import csv
+
+@login_required
+def download_voice_list_csv(request):
+    if request.user.is_superuser:
+        voices = Voices.objects.all()
+        header = ['created_by', 'word', 'duration', 'owner_name', 'owner_surname', 'owner_gender', 'created_at']
+    else:
+        voices = Voices.objects.filter(created_by=request.user)
+        header = ['word', 'duration', 'owner_name', 'owner_surname', 'owner_gender', 'created_at']
+
+    # Create the HttpResponse object with the appropriate CSV header
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="voice_list.csv"'
+
+    writer = csv.writer(response)
+
+    # Write the header row
+    writer.writerow(header)
+
+    # Write data rows
+    for voice in voices:
+        if request.user.is_superuser:
+            writer.writerow([
+                voice.created_by,
+                voice.word,
+                voice.duration,
+                voice.owner_name,
+                voice.owner_surname,
+                voice.owner_gender,
+                voice.created_at.strftime("%Y-%m-%d %H:%M:%S")
+            ])
+        else:
+            writer.writerow([
+                voice.word,
+                voice.duration,
+                voice.owner_name,
+                voice.owner_surname,
+                voice.owner_gender,
+                voice.created_at.strftime("%Y-%m-%d %H:%M:%S")
+            ])
+
+    return response
