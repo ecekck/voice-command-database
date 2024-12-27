@@ -42,8 +42,7 @@ def record_voice(request):
             form = VoiceRecorderForm(request.POST, request.FILES, request=request)
             if form.is_valid():
                 form.save()
-                print("forms save edildi")
-                return redirect('show_voices')
+                return JsonResponse({'status': 'success', 'message': 'Ses başarıyla yüklendi.'})
             else:
                 errors = form.errors.as_json()
                 return JsonResponse({'status': 'error', 'errors': errors}, status=400)
