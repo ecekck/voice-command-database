@@ -54,6 +54,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CSRF_TRUSTED_ORIGINS = ['https://cihanayindi.com']
+
 ROOT_URLCONF = 'VoiceCommandDatabase.urls'
 
 TEMPLATES = [
